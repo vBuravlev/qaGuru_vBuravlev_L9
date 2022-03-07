@@ -55,14 +55,14 @@ public class FileOperation {
             //Добавление файлов из директории в zip файл
             for (String srcFile : srcFiles) {
                 File fileToZip = new File(classLoader.getResource(srcFile).getFile());
-                try (FileInputStream fis = new FileInputStream(fileToZip)) {
+                try (FileInputStream fis = new FileInputStream(classLoader.getResource(srcFile).getFile());
+                     BufferedInputStream bufferedInputStream = new BufferedInputStream(fis)) {
                     ZipEntry zipEntry = new ZipEntry(fileToZip.getName());
                     zipOut.putNextEntry(zipEntry);
 
-                    byte[] bytes = new byte[1024];
-                    int length;
-                    while ((length = fis.read(bytes)) >= 0) {
-                        zipOut.write(bytes, 0, length);
+                    byte[] bytes = new byte[65536];
+                    while (bufferedInputStream.available() > 0) {
+                        zipOut.write(bytes, 0, bufferedInputStream.read(bytes));
                     }
                 }
             }

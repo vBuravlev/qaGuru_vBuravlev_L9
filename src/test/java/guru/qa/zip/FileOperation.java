@@ -50,25 +50,22 @@ public class FileOperation {
     }
 
     public static void zipFileCreate(String resourcesDirName, String zipFileName, List<String> srcFiles, ClassLoader classLoader) throws IOException {
-        try {
-            ZipOutputStream zipOut = new ZipOutputStream(new FileOutputStream(resourcesDirName + zipFileName));
-            zipOut.setLevel(Deflater.BEST_SPEED);
+        try (ZipOutputStream zipOut = new ZipOutputStream(new FileOutputStream(resourcesDirName + zipFileName))) {
+             zipOut.setLevel(Deflater.BEST_SPEED);
             //Добавление файлов из директории в zip файл
             for (String srcFile : srcFiles) {
                 File fileToZip = new File(classLoader.getResource(srcFile).getFile());
-                FileInputStream fis = new FileInputStream(fileToZip);
-                ZipEntry zipEntry = new ZipEntry(fileToZip.getName());
-                zipOut.putNextEntry(zipEntry);
+                try (FileInputStream fis = new FileInputStream(fileToZip)) {
+                    ZipEntry zipEntry = new ZipEntry(fileToZip.getName());
+                    zipOut.putNextEntry(zipEntry);
 
-                byte[] bytes = new byte[1024];
-                int length;
-                while ((length = fis.read(bytes)) >= 0) {
-                    zipOut.write(bytes, 0, length);
+                    byte[] bytes = new byte[1024];
+                    int length;
+                    while ((length = fis.read(bytes)) >= 0) {
+                        zipOut.write(bytes, 0, length);
+                    }
                 }
-                fis.close();
             }
-            zipOut.close();
-        } finally {
         }
     }
 

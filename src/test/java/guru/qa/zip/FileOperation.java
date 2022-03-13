@@ -11,7 +11,14 @@ import java.util.zip.Deflater;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
+import java.io.IOException;
+import java.io.File;
 
+import com.codeborne.pdftest.PDF;
+import com.codeborne.xlstest.XLS;
+import com.opencsv.CSVReader;
+
+import static com.codeborne.pdftest.assertj.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class FileOperation {
@@ -41,6 +48,8 @@ public class FileOperation {
         }
     }
 
+
+
     public static void deleteFileInDir(String resourcesDirName, String zipFileName) {
         try {
             Files.delete(Paths.get(resourcesDirName + zipFileName));
@@ -68,5 +77,30 @@ public class FileOperation {
             }
         }
     }
+
+    public static void parsePdf (InputStream pdfFile, String expectedText) throws Exception {
+        PDF pdf = new PDF(pdfFile);
+        assertThat(pdf.text).contains(expectedText);
+
+    }
+
+    public static void parseXls(InputStream file, String expectedText, int xlsSheetNumber, int xlsRowNumber, int xlsCellNumber) throws Exception {
+        XLS xls = new XLS(file);
+        assertThat(xls.excel
+                .getSheetAt(xlsSheetNumber)
+                .getRow(xlsRowNumber)
+                .getCell(xlsCellNumber)
+                .getStringCellValue()).contains(expectedText);
+    }
+
+    public static void parseCsv(InputStream file, String expectedText, int csvRowNumber) throws Exception {
+        try (CSVReader reader = new CSVReader(new InputStreamReader(file))) {
+            List<String[]> content = reader.readAll();
+            assertThat(content.get(csvRowNumber)).startsWith(expectedText);
+        }
+    }
+
+
+
 
 }
